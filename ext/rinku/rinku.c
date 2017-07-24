@@ -223,24 +223,24 @@ rinku_autolink(
 			const size_t link_len = link.end - link.start;
 
 			bufput(ob, text + i, link.start - i);
-			bufputs(ob, g_hrefs[(int)action]);
-			print_link(ob, link_str, link_len);
-
-			if (link_attr) {
-				BUFPUTSL(ob, "\" ");
-				bufputs(ob, link_attr);
-				bufputc(ob, '>');
-			} else {
-				BUFPUTSL(ob, "\">");
-			}
-
 			if (link_text_cb) {
 				link_text_cb(ob, link_str, link_len, payload);
-			} else {
-				bufput(ob, link_str, link_len);
-			}
+      } else {
+        bufputs(ob, g_hrefs[(int)action]);
+        print_link(ob, link_str, link_len);
 
-			BUFPUTSL(ob, "</a>");
+        if (link_attr) {
+          BUFPUTSL(ob, "\" ");
+          bufputs(ob, link_attr);
+          bufputc(ob, '>');
+        } else {
+          BUFPUTSL(ob, "\">");
+        }
+
+        bufput(ob, link_str, link_len);
+
+        BUFPUTSL(ob, "</a>");
+      }
 
 			link_count++;
 			end = i = link.end;

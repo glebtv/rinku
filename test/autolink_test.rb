@@ -110,7 +110,16 @@ This is just a test. <a href="http://www.pokemon.com">http://www.pokemon.com</a>
     url = "http://api.rubyonrails.com/Foo.html"
     email = "fantabulous@shiznadel.ic"
 
-    assert_equal %(<p><a href="#{url}">#{url[0...7]}...</a><br /><a href="mailto:#{email}">#{email[0...7]}...</a><br /></p>), Rinku.auto_link("<p>#{url}<br />#{email}<br /></p>") { |_url| _url[0...7] + '...'}
+    result = Rinku.auto_link("<p>#{url}<br />#{email}<br /></p>") { |_url|
+      if _url.index("@").nil?
+        zurl = url
+      else
+        zurl = "mailto:#{_url}"
+      end
+      "<a href=\"#{zurl}\">#{_url[0...7] + '...'}</a>"
+    }
+
+    assert_equal %(<p><a href="#{url}">#{url[0...7]}...</a><br /><a href="mailto:#{email}">#{email[0...7]}...</a><br /></p>), result
   end
 
   def test_auto_link_with_block_with_html
@@ -118,14 +127,15 @@ This is just a test. <a href="http://www.pokemon.com">http://www.pokemon.com</a>
     url = "http://example.com/album?a&b=c"
 
     expect = %(My pic: <a href="#{pic}"><img src="#{pic}" width="160px"></a> -- full album here #{generate_result(url)})
-    text = "My pic: #{pic} -- full album here #{CGI.escapeHTML url}"
+    text = "My pic: #{pic} -- full album here #{url}"
 
     assert_equal expect, Rinku.auto_link(text) { |link|
-      if link =~ /\.(jpg|gif|png|bmp|tif)$/i
-        %(<img src="#{link}" width="160px">)
+      ret = if link =~ /\.(jpg|gif|png|bmp|tif)$/i
+        %(<img src="#{CGI.escapeHTML(link)}" width="160px">)
       else
-        link
+        CGI.escapeHTML(link)
       end
+      "<a href=\"#{CGI.escapeHTML(link)}\">#{ret}</a>"
     }
   end
 
@@ -159,6 +169,14 @@ This is just a test. <a href="http://www.pokemon.com">http://www.pokemon.com</a>
       "POKEMAN WEBSITE"
     end
 
+    assert_equal link, "Find ur favorite pokeman @ POKEMAN WEBSITE"
+  end
+
+  def test_block
+    link = Rinku.auto_link("Find ur favorite pokeman @ http://www.pokemon.com") do |url|
+      assert_equal url, "http://www.pokemon.com"
+      "<a href=\"#{CGI.escapeHTML(url)}\">POKEMAN WEBSITE</a>"
+    end
     assert_equal link, "Find ur favorite pokeman @ <a href=\"http://www.pokemon.com\">POKEMAN WEBSITE</a>"
   end
 

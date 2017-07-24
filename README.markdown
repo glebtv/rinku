@@ -1,3 +1,5 @@
+## PATCHED - block callback replaces whole link including ```<a>```
+
 Rinku does linking
 ==================
 
